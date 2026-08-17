@@ -19,6 +19,9 @@ def main():
             logger.info(f'Данные за {target_date} уже существуют. Новые строки не загружены')
         else:
             logger.info(f'Ежедневная загрузка завершена. За {target_date} загружено: {rows_loaded}')
+        loader.refresh_materialized_views()
+        logger.info('Все аналитические витрины успешно обновлены')
+        logger.info(f'Ежедневная обработка за {target_date} завершена. Загружено строк {rows_loaded}')
     except  Exception:
         logger.exception(f'Ежедневная загрузка за {target_date} завершилась ошибкой')
         raise

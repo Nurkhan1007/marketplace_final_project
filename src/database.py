@@ -64,6 +64,42 @@ class PostgreSQLLoader:
             logger.exception(f'Ошибка проверки данных за дату: {target_date}')
             raise
 
+    def refresh_materialized_views(self):
+        materialized_views = (
+            'analytics.mv_daily_sales',
+            'analytics.mv_customer_rfm',
+            'analytics.mv_product_monthly_sales',
+            'analytics.mv_product_abc_xyz',
+        )
+
+        try:
+            with self.engine.connect() as connection:
+                autocommit_connection = connection.execution_options(
+                    isolation_level='AUTOCOMMIT'
+                )
+
+                for view_name in materialized_views:
+                    logger.info(
+                        f'Начато обновление витрины {view_name}'
+                    )
+
+                    autocommit_connection.execute(
+                        text(
+                            'REFRESH MATERIALIZED VIEW '
+                            f'CONCURRENTLY {view_name}'
+                        )
+                    )
+
+                    logger.info(
+                        f'Витрина {view_name} успешно обновлена'
+                    )
+
+        except Exception:
+            logger.exception(
+                'Ошибка обновления аналитических витрин'
+            )
+            raise
+
     def close(self):
         self.engine.dispose()
         logger.info(f'Соединение с {self.database} закрыто')
